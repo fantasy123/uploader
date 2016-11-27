@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>touch-slide</title>
+	<meta name='viewport' content='width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no'/>
+	<link rel="stylesheet" href="css/style.css">
+	<script src='js/data.js'></script><!-- 引入模拟后台传入的数据 -->
+</head>
+<body>
+	<div id="canvas">
+		
+	</div>
+
+	<script>
+		//定义构造函数
+		function Slider(opts){//构造函数接收一个对象作为配置项
+			//typeof Slider==='function' typeof (new Slider())==='object'
+			this.wrap=opts.dom;//绑到对象上去 供方法使用
+			this.list=opts.data;
+
+			//构造三部曲
+			this.init();
+			this.renderDOM();//渲染DOM结构
+			this.bindDOM();//绑定三大事件
+		}
+
+		//初始化函数-准备部分全局属性
+		Slider.prototype.init=function () {//这种绑定方法的方式耦合度较低
+			this.ratio=window.innerHeight/window.innerWidth;//窗口长宽比
+			this.scaleW=window.innerWidth;
+			this.scaleH=window.innerHeight;
+			this.idx=0;//当前图片的索引
+		}
+
+		//渲染DOM函数-外加准备更多全局属性
+		Slider.prototype.renderDOM=function () {
+			var wrap=this.wrap;
+			var data=this.list;
+			var scaleX=this.scaleW;//绑定全局属性的位置(构造函数|在该方法之前调用的方法)
+			var scaleY=this.scaleH;
+			var ratio=this.ratio;
+
+			this.outer=document.createElement('ul');//创建外层空ul
+			var emptyUl=this.outer;//emptyUl仅本方法内有用
+
+			//循环创建li插入ul
+			data.forEach(function (e,i) {
+				var li=document.createElement('li');//创建空li
+
+				//设置li的样式
+				li.style.width=scaleX;//占满宽度
+				li.style.webkitTransform='translate3d('+(i*scaleX)+'px,0,0)';//根据索引确定初始偏移量
+
+				if(e){//存在性判断
+					//通过innerHTML的方式向li塞入图片内容外加style信息
+					//条件判断设定图片的撑满方式
+					if (e.height/e.width>ratio) {//图片是一窄条,水平居中,垂直撑满
+						li.innerHTML="<img src="+e.src+" height='+"+scaleY+"'/>";//innerHTML和append结合
+					} else {//图片宽撑满 宽设为窗口宽度
+						li.innerHTML="<img src="+e.src+" width='+"+scaleX+"'/>";
+					}
+				}
+
+				emptyUl.appendChild(li);//须在循环里
+			})
+			//循环结束
+
+			//进一步设置ul的样式
+			emptyUl.style.width=scaleX+'px';//因为li不占位
+
+			//ul进一步塞入最外层canvas
+			wrap.appendChild(emptyUl);
+		};
+
+		//绑定DOM事件(移动端三大事件)
+		Slider.prototype.bindDOM=function () {
+			var self=this;//JS是函数作用域 保存this到self里 防止指针飘移
+			var scaleX=self.scaleW;
+			var outer=self.outer;
+
+			//初始化后面要用的属性
+			var startHandler=function (e) {
+				self.startX=e.touches[0].pageX;//绑到self上,后面函数还要用;手机浏览器里:事件对象有一个touches数组,记录
+				//当前手指的位置,由于是单点触控,取第一项(一个坐标)即可
+				self.offsetX=0;//初始化,记录x方向的偏移量,反复置0是为了独立每一次触摸事件
+				self.startTime=new Date()*1;//(Date对象实例一旦参与运算,会得到一个数字,*1得到当前时间戳)
+			}
+
+			var moveHandler=function (e) {
+				e.preventDefault();//阻止默认事件 屏蔽各种手机浏览器对于touchmove事件的差异
+
+				self.offsetX=e.touches[0].pageX-self.startX;//手指划过距离
+
+				//视口最多显示3张图片,需要给其中的2张加动画效果(不出现在画面里的不动)
+				var lis=outer.getElementsByTagName('li');
+				var i=self.idx-1;//最左边那一张 索引-1 是废的
+				var m=self.idx+1;//最右边那一张 
+
+				for(i;i<=m;i++){
+					lis[i]&&(lis[i].style.webkitTransform="translate3d("+((i-self.idx)*scaleX+self.offsetX)+"px,0,0)");
+					//i=-1时,索引无效;
+					//i=0时(中间那张),动self.offsetX的距离;
+					//i=1时( 右边那张),如果往左,self.offsetX为负,scaleX-|offsetX|
+					//如果向右,self.offsetX为正,scaleX+|offsetX|,进一步左偏
+				}
+			}
+
+			var endHandler=function (e) {//松开事件
+				var boundary=scaleX/6;//设定一个临界值
+				var endTime=new Date()*1;
+				var lis=outer.getElementsByTagName('li');
+				var dur=endTime-self.startTime;//用户从触摸到松开的时间间隔
+
+				//多一层对用户快划的判断
+				if (dur>800) {//长划 应用这套距离判断逻辑
+					if (self.offsetX>=boundary) {//往右划
+						self.go('-1');//显示上一张
+					} else if(self.offsetX<=-boundary){//往左划
+						self.go('1');//显示下一张
+					}
+					else{
+						self.go('0');//li的索引不变
+					}
+				} else {//短划 判断趋势即可
+					if (self.offsetX>50) {//设定一个临界值 区分开点击
+						self.go('-1');
+					} else if(self.offsetX<-50){
+						self.go('1');
+					}
+					else{
+						self.go('0');
+					}
+				}
+				//既判断间隔时间 也判断距离
+			}
+
+			//移动端的事件就不用写那么多兼容
+			outer.addEventListener('touchstart',startHandler);//按下
+			outer.addEventListener('touchmove',moveHandler);//拖动
+			outer.addEventListener('touchend',endHandler);//松开
+		}
+
+		Slider.prototype.go=function (n) {//翻页函数
+			var idx=this.idx;//当前索引 初始化为0
+			var cidx;//保存下一个索引(最终会替换idx成为当前)
+			var lis=this.outer.getElementsByTagName('li');
+			var len=lis.length;
+			var scaleX=this.scaleW;
+
+			cidx=idx+n*1;//传入的是字符串 先*1变成整数 再与当前索引相加生成下一个索引替换当前索引
+
+			//判断cidx边界,防止超出数组索引
+			if (cidx>len-1) {
+				cidx=len-1;//超出边界强行设定在边界
+			} else if(cidx<0){
+				cidx=0;
+			}
+
+			this.idx=cidx;//递归(不断替换this.idx)
+
+			//先加存在性判断 cidx现在是当前索引
+			lis[cidx]&&(lis[cidx].style.webkitTransform='translate3d(0,0,0)');//go('0')
+			lis[cidx-1]&&(lis[cidx-1].style.webkitTransform='translate3d('+(-scaleX)+'px,0,0)');//go('-1')
+			lis[cidx+1]&&(lis[cidx+1].style.webkitTransform='translate3d('+scaleX+'px,0,0)');//go('1')
+			//松开后translate3d设定到上述值
+		}
+
+		//new一个实例 传实参
+		new Slider({ //opts
+			dom:document.getElementById('canvas'),//包裹层
+			data:list//后台传来的构造必要的数据
+		})
+	</script>
+</body>
+</html>
