@@ -1,0 +1,83 @@
+img {
+  vertical-align: bottom;
+}
+
+#mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 99;
+}
+
+#popup {
+  position: fixed;
+  width: 300px;
+  height: 300px;
+  left: 50%;
+  margin-left: -150px;
+  z-index: 100;
+}
+
+#popup .pic-view {
+  position: relative;
+  border: 5px solid #fff;
+  border-radius: 3px;
+  overflow: hidden;
+  background: url(../img/icon/loading.gif) no-repeat center center;
+}
+
+#popup .pic-view .btn {
+  position: absolute;
+  width: 40%;
+  height: 100%;
+}
+
+#popup .pic-view .btn.prev {
+  left: 0;
+}
+
+#popup .pic-view .btn.prev.show {
+  background: url(../img/icon/prev.png) no-repeat left center;
+  cursor: pointer;
+}
+
+#popup .pic-view .btn.next {
+  right: 0;
+}
+
+#popup .pic-view .btn.next.show {
+  background: url(../img/icon/next.png) no-repeat right center;
+  cursor: pointer;
+}
+
+#popup .pic-view .image {
+  width: 100%;
+}
+
+#popup .pic-caption {
+  position: relative;
+  margin: 0 5px;
+  margin-top: -60px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+#popup .pic-caption .caption-area {
+  color: #fff;
+  padding: 10px 5px;
+}
+
+#popup .pic-caption .caption-area .index {
+  color: #999;
+}
+
+#popup .pic-caption .btn-close {
+  position: absolute;
+  right: 10px;
+  top: 13px;
+  width: 27px;
+  height: 27px;
+  background: url(../img/icon/close.png) no-repeat center center;
+}
