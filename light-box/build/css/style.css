@@ -1,5 +1,6 @@
-img {
-  vertical-align: bottom;
+* {
+  margin: 0;
+  padding: 0;
 }
 
 #mask {
@@ -14,10 +15,11 @@ img {
 
 #popup {
   position: fixed;
-  width: 300px;
+  width: 400px;
   height: 300px;
   left: 50%;
-  margin-left: -150px;
+  top: 50px;
+  margin-left: -200px;
   z-index: 100;
 }
 
@@ -80,4 +82,9 @@ img {
   width: 27px;
   height: 27px;
   background: url(../img/icon/close.png) no-repeat center center;
+}
+
+.g-wrap img {
+  width: 100px;
+  height: 100px;
 }
