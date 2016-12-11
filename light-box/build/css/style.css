@@ -4,6 +4,7 @@
 }
 
 #mask {
+  display: none;
   position: fixed;
   left: 0;
   right: 0;
@@ -14,11 +15,12 @@
 }
 
 #popup {
+  display: none;
   position: fixed;
   width: 400px;
   height: 300px;
   left: 50%;
-  top: 50px;
+  top: 50%;
   margin-left: -200px;
   z-index: 100;
 }
@@ -28,7 +30,7 @@
   border: 5px solid #fff;
   border-radius: 3px;
   overflow: hidden;
-  background: url(../img/icon/loading.gif) no-repeat center center;
+  background: #fff url(../img/icon/loading.gif) no-repeat center center;
 }
 
 #popup .pic-view .btn {
