@@ -49,8 +49,9 @@ LightBox.prototype={
 		this.showMaskAndPop(src,id);
 	},
 	showMaskAndPop:function (src,id) {
-		var viewWidth=winWidth/2+10;//10是5px的边框
-		var viewHeight=winHeight/2+10;//用到超过一次的,都想着用一个变量存起来
+		var self=this,
+			viewWidth=winWidth/2+10,//10是5px的边框
+			viewHeight=winHeight/2+10;//用到超过一次的,都想着用一个变量存起来
 
 		//把图片区域和文字区域隐藏,后期要用js填充
 		this.popImg.hide();
@@ -73,7 +74,7 @@ LightBox.prototype={
 			top:-viewHeight//先藏到上面看不见的地方
 		}).animate({//过渡动画,自上而下,垂直居中
 			top: (winHeight-viewHeight)/2},function() {
-			//Todo 重中之重 出图片撑开
+			self.loadPic(src);//这里的this是win
 		});
 
 		//根据当前图片的data-id属性得到在同组数据数组里的索引(判断是否显示上下切换标签)
@@ -94,6 +95,36 @@ LightBox.prototype={
 				this.nextBtn.removeClass('disable');//防止之前加上了disable 清理掉
 			}
 		}
+	},
+	loadPic:function (picSrc) {
+		var self=this;
+
+		this.preLoadImg(picSrc,function () {//待加载的大图图片地址和加载完成后的回调函数
+			self.popImg.attr('src',picSrc); 
+
+			var imgWidth=self.popImg.width(),
+				imgHeight=self.popImg.height();
+
+			console.log(imgWidth+':'+imgHeight); 
+		}); 
+	},
+	preLoadImg:function (src,callback) {//图片预加载
+		var img=new Image();//新建一个图片对象
+
+		//图片对象加载完成执行回调
+		if (window.ActiveXObject) {	//IE
+			img.onreadystatechange=function () {
+				if(this.readyState==='complete'){
+					callback();
+				}
+			};
+		} else {//现代浏览器
+			img.onload=function () {
+				callback();
+			};
+		}
+
+		img.src=src;//图片源地址声明
 	},
 	getIndex:function (curId) {
 		var idx=0;//初始化用于保存返回值的变量

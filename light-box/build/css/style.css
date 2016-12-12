@@ -57,10 +57,6 @@
   cursor: pointer;
 }
 
-#popup .pic-view .image {
-  width: 100%;
-}
-
 #popup .pic-caption {
   position: relative;
   margin: 0 5px;
