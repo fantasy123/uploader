@@ -105,8 +105,40 @@ LightBox.prototype={
 			var imgWidth=self.popImg.width(),
 				imgHeight=self.popImg.height();
 
-			console.log(imgWidth+':'+imgHeight); 
+			self.setSize(imgWidth,imgHeight); //得到当前点击的图片宽高,设置展开动画
 		}); 
+	},
+	setSize:function (w,h) {//图片宽高传入
+		var self=this,
+			winW=$(window).width(),
+			winH=$(window).height();//视口相关
+
+		var scale=Math.min(winW/(w+10),winH/(h+10),1); //保证图片在视口里的系数
+
+		w=w*scale;
+		h=h*scale;//过滤图片宽高
+
+		this.picViewArea.animate({//图片区动画(考虑边框)
+			width: w-10,
+			height: h-10
+		});	
+
+		this.win.animate({//窗口动画
+			width: w,
+			height: h,
+			marginLeft:-w/2,
+			top:(winH-h)/2//动态居中
+		},function () {
+			self.popImg.css({
+				width: w-10,
+				height: h-10
+			}).fadeIn();//设置宽高并显示之前隐藏的图片
+
+			self.picCaptionArea.fadeIn();//展示描述区
+		});
+
+		this.captionTxt.text(this.gData[this.index].caption);//填充描述区
+		this.curIdx.text('当前索引:'+(this.index+1)+' of '+this.gData.length);//填充索引区
 	},
 	preLoadImg:function (src,callback) {//图片预加载
 		var img=new Image();//新建一个图片对象
