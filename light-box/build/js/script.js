@@ -19,7 +19,7 @@ var LightBox=function () {
 	this.prevBtn=this.win.find('span.prev');
 	this.captionTxt=this.win.find('.pic-desc');//描述
 	this.curIdx=this.win.find('.index');//当前图片索引
-	this.closeBtn=this.win.find('span.btn-close');//关闭按钮
+	this.closeBtn=this.win.find('.btn-close');//关闭按钮
 
 	//delegate能匹配页面后期动态加载出的元素
 	//这里是函数入口 事件触发的地方
@@ -36,10 +36,88 @@ var LightBox=function () {
 
 		//用获得的数据初始化弹出框
 		self.initPop($(this));//传入当前被点击的图片元素封装而成的JQ对象
+
+		self.mask.click(function(event) {//点击遮罩关闭窗口
+			$(this).fadeOut();
+			self.win.fadeOut();
+		});
+
+		self.closeBtn.click(function () {//关闭按钮的功能
+			self.mask.fadeOut();
+			self.win.fadeOut();
+		});
+
+		self.flag=true;//初始化
+		//绑定悬浮显示上下切换按钮的事件
+		self.nextBtn.hover(function() {
+			if(!($(this).hasClass('disable'))&&self.gData.length>1){
+				$(this).addClass('show');
+			}
+		}, function() {
+			if(!($(this).hasClass('disable'))&&self.gData.length>1){
+				$(this).removeClass('show');
+			}
+		}).click(function (e) {
+			e.stopPropagation();
+
+			if(!$(this).hasClass('disable')&&self.flag){//true表示可以点
+				self.flag=!self.flag;//点击之后立刻置反,禁止点击,等图片加载完之后才重置为true(允许点击)
+				self.goto('next');
+			}
+		});
+		//悬浮:须同时满足多项并且不是首尾才能加按钮;离开:反之。
+		self.prevBtn.hover(function() {
+			if(!($(this).hasClass('disable'))&&self.gData.length>1){
+				$(this).addClass('show');
+			}
+		}, function() {
+			if(!($(this).hasClass('disable'))&&self.gData.length>1){
+				$(this).removeClass('show');
+			}
+		}).click(function (e) {
+			e.stopPropagation();
+
+			if(!$(this).hasClass('disable')&&self.flag){
+				self.flag=!self.flag;
+				self.goto('prev');
+			}
+		});
 	});
 };
 
 LightBox.prototype={
+	//切换图片的方法
+	goto:function (dir) {
+		if(dir==='next'){
+			this.index++;//已经是下一张了
+
+			if(this.index>=this.gData.length-1){//到最后
+				this.nextBtn.addClass('disable').removeClass('show');
+				//加了disable,就不会调用goto 
+			};
+			if(this.index!==0){
+				this.prevBtn.removeClass('disable');//不再是第一个 要确保向上的按钮不会disable
+			};
+
+			//调用loadPic函数切换下一张图片
+			var src=this.gData[this.index].src;
+			this.loadPic(src);
+		}else{
+			this.index--;//已经是上一张了
+
+			if(this.index<=0){//到第一张
+				this.prevBtn.addClass('disable').removeClass('show');
+				//加了disable,就不会调用goto 
+			};
+			if(this.index!==this.gData.length-1){
+				this.nextBtn.removeClass('disable');//不再是最后一张 要确保向下的按钮不会disable
+			};
+
+			//调用loadPic函数切换下一张图片
+			var src=this.gData[this.index].src;
+			this.loadPic(src);
+		}
+	},
 	//init系开始
 	initPop:function (curObj) {
 		var	src=curObj.attr('data-source'),
@@ -99,6 +177,11 @@ LightBox.prototype={
 	loadPic:function (picSrc) {
 		var self=this;
 
+		self.popImg.css({
+			width: 'auto',
+			height: 'auto'
+		}).hide();//清除上次图片的宽高
+
 		this.preLoadImg(picSrc,function () {//待加载的大图图片地址和加载完成后的回调函数
 			self.popImg.attr('src',picSrc); 
 
@@ -135,6 +218,7 @@ LightBox.prototype={
 			}).fadeIn();//设置宽高并显示之前隐藏的图片
 
 			self.picCaptionArea.fadeIn();//展示描述区
+			self.flag=true;
 		});
 
 		this.captionTxt.text(this.gData[this.index].caption);//填充描述区
