@@ -3,6 +3,8 @@
 	padding: 0;
 }
 
+//设置元素宽高可以强制出现滚动条
+
 #mask{
 	display: none;
 
@@ -13,6 +15,9 @@
 	bottom: 0;
 	background-color: rgba(0,0,0,.5);
 	z-index: 99;
+}
+*html #mask{//针对IE 6的CSS hack 也可以直接在css里写_position:absolute
+	position: absolute;
 }
 
 #popup{
@@ -86,6 +91,9 @@
 			background: url(../img/icon/close.png) no-repeat center center;
 		}
 	}
+}
+*html #popup{//针对IE 6的CSS hack
+	position: absolute;
 }
 
 .g-wrap{

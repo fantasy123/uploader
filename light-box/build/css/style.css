@@ -14,6 +14,10 @@
   z-index: 99;
 }
 
+*html #mask {
+  position: absolute;
+}
+
 #popup {
   display: none;
   position: fixed;
@@ -80,6 +84,10 @@
   width: 27px;
   height: 27px;
   background: url(../img/icon/close.png) no-repeat center center;
+}
+
+*html #popup {
+  position: absolute;
 }
 
 .g-wrap img {
